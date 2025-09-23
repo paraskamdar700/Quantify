@@ -1,0 +1,53 @@
+1️⃣ Registration → Owner + Firm
+Client (browser)
+       |
+       | POST /register
+       | { fullname, email, password, firm_name, gst_no, city, street }
+       V
+Server (Backend)
+       |
+       | Creates Firm record
+       | Creates User record with role = OWNER
+       | Responds with success (no JWT yet)
+       V
+Owner is registered and linked to the firm
+
+
+
+
+Login → Get JWT
+Client (browser)
+       |
+       | POST /login
+       | { email, password }
+       V
+Server
+       |
+       | Validate credentials
+       | Generate JWT: 
+       | { id: user.id, role: user.role, Firm_id: user.Firm_id }
+       | Sign token with secret
+       V
+Client receives token:
+Authorization: Bearer <token>
+
+
+Protected Routes → Role-Based Access
+Client (browser)
+       |
+       | GET /add-user
+       | Headers: Authorization: Bearer <token>
+       V
+authMiddleware
+       |
+       | Verify token
+       | Decode payload: { id, role, Firm_id }
+       | Attach to req.user
+       V
+Route Handler
+       |
+       | Check req.user.role
+       | if role !== OWNER → 403 Forbidden
+       | if role === OWNER → allow adding ADMIN or STAFF
+       V
+User is added to the same Firm

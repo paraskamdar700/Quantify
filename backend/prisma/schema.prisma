@@ -1,0 +1,154 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Firm {
+  id         Int        @id @default(autoincrement())
+  firm_name  String     @unique
+  gst_no     Int        @unique
+  firm_city  String
+  firm_street String
+  createdAt  DateTime   @default(now())
+
+  users      User[]
+  customers  Customer[]
+  stocks     Stock[]
+  categories Category[]
+  orders     Order[]
+  payments   Payment[]
+}
+
+model User {
+  id           Int       @id @default(autoincrement())
+  fullname     String
+  contact_no   String?   @unique
+  email        String    @unique
+  password_hash String
+  role         Role
+  avatar       String?
+  bio          String?
+  Firm         Firm?    @relation(fields: [Firm_id], references: [id], onDelete: SetNull)
+  Firm_id      Int?
+  categories   Category[] @relation("CreatedCategories")
+  createdAt    DateTime   @default(now())
+}
+
+model Customer {
+  id         Int      @id @default(autoincrement())
+  name       String
+  firm_name  String
+  contact_no String?
+  gst_no     String?
+  city       String?
+  street     String?
+  Firm       Firm?    @relation(fields: [Firm_id], references: [id], onDelete: SetNull)
+  Firm_id    Int?
+  orders     Order[]
+  payments   Payment[]
+  createdAt  DateTime @default(now())
+}
+
+model Stock {
+  id                  Int       @id @default(autoincrement())
+  stock_name          String
+  sku_code            String    @unique
+  unit                String
+  quantity_available  Decimal
+  buy_price           Decimal
+  low_unit_threshold  Decimal
+  Firm                Firm?     @relation(fields: [Firm_id], references: [id], onDelete: SetNull)
+  Firm_id             Int?
+  Category            Category? @relation(fields: [Category_id], references: [id], onDelete: SetNull)
+  Category_id         Int?
+  orderStocks         Order_stock_table[]
+  createdAt           DateTime  @default(now())
+}
+
+model Category {
+  id          Int      @id @default(autoincrement())
+  category_name String
+  description  String?
+  Firm         Firm?   @relation(fields: [Firm_id], references: [id], onDelete: SetNull)
+  Firm_id      Int?
+  Created_by   User?   @relation("CreatedCategories", fields: [Created_by_id], references: [id], onDelete: SetNull)
+  Created_by_id Int?
+  stocks       Stock[]
+  createdAt    DateTime @default(now())
+}
+
+model Order {
+  id           Int      @id @default(autoincrement())
+  order_date   DateTime
+  total_amount Decimal
+  invoice_no   String   @unique
+  status       OrderStatus @default(PENDING)
+  Firm         Firm?    @relation(fields: [Firm_id], references: [id], onDelete: SetNull)
+  Firm_id      Int?
+  Customer     Customer? @relation(fields: [Customer_id], references: [id], onDelete: SetNull)
+  Customer_id  Int?
+  payments     Payment[]
+  orderStocks  Order_stock_table[]
+  createdAt    DateTime @default(now())
+}
+
+model Order_stock_table {
+  id           Int      @id @default(autoincrement())
+  selling_price String
+  quantity     Int
+  subtotal     String
+  Order        Order?   @relation(fields: [Order_id], references: [id], onDelete: SetNull)
+  Order_id     Int?
+  Stock        Stock?   @relation(fields: [Stock_id], references: [id], onDelete: SetNull)
+  Stock_id     Int?
+  createdAt    DateTime @default(now())
+}
+
+model Payment {
+  id            Int      @id @default(autoincrement())
+  payment_date  DateTime @default(now())
+  amount_paid   Decimal
+  payment_method PaymentMethod
+  reference_no  String
+  remarks       String?
+  Order         Order?   @relation(fields: [Order_id], references: [id], onDelete: SetNull)
+  Order_id      Int?
+  Firm          Firm?    @relation(fields: [Firm_id], references: [id], onDelete: SetNull)
+  Firm_id       Int?
+  Customer      Customer? @relation(fields: [Customer_id], references: [id], onDelete: SetNull)
+  Customer_id   Int?
+  createdAt     DateTime @default(now())
+}
+
+model File_Media {
+  file_id     Int      @id @default(autoincrement())
+  entity_type String
+  entity_id   Int
+  file_url    String
+  createdAt   DateTime @default(now())
+}
+
+enum Role {
+  OWNER
+  ADMIN
+  STAFF
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  CASH
+  CARD
+  UPI
+  BANK_TRANSFER
+}
