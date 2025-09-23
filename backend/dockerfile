@@ -1,0 +1,22 @@
+# Use an official Node.js runtime as the base image
+FROM node:18-alpine
+
+# Set the working directory inside the container
+WORKDIR /usr/src/app
+
+# Copy package.json and package-lock.json and install dependencies
+# A separate step is recommended to leverage Docker's caching
+COPY package*.json ./
+RUN npm install
+
+# Copy the rest of the application code 
+#you uncomment this line when you are in production
+# COPY . .
+
+# Expose the port your app runs on
+EXPOSE 5000
+
+# The CMD is overridden by the `command` in docker-compose.yml
+# This is a good fallback for production.
+CMD ["npm", "run", "dev"]
+# CMD ["node", "src/index.js"]

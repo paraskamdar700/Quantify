@@ -1,0 +1,31 @@
+{
+  "name": "quantify",
+  "version": "1.0.0",
+  "description": "",
+  "keywords": [
+    "paras",
+    "quantify"
+  ],
+  "homepage": "https://github.com/paraskamdar700/Quantify#readme",
+  "bugs": {
+    "url": "https://github.com/paraskamdar700/Quantify/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/paraskamdar700/Quantify.git"
+  },
+  "license": "ISC",
+  "author": "Paras Kamdar",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon backend/src/index.js"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.2",
+    "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}

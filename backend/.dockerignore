@@ -1,0 +1,29 @@
+# Dependency directories
+node_modules
+npm-debug.log
+yarn-error.log
+
+# Environment files
+.env
+.env.*    # in case you have multiple env files
+
+# Logs
+logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Docker files (optional, since Docker already has them)
+Dockerfile
+docker-compose.yml
+
+# Git files
+.git
+.gitignore
+
+# IDE / editor files
+.vscode
+.idea
+*.swp
