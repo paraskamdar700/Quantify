@@ -2,7 +2,7 @@
 FROM node:18-alpine
 
 # Set the working directory inside the container
-WORKDIR /usr/src/app
+WORKDIR /usr/src/app/
 
 # Copy package.json and package-lock.json and install dependencies
 # A separate step is recommended to leverage Docker's caching

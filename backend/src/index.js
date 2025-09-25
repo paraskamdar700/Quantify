@@ -1,14 +1,15 @@
 import express from 'express';
 import dotenv from 'dotenv';
-import constant from './constant.js';
+import { PORT} from './constant.js';
+
 
 const app = express();
 dotenv.config();
 
 app.get('/', (req, res) => {
-    res.send('Hello World!');
+    res.send('Hello Worldgbnhfdghb!');
 })
 
-app.listen(constant.PORT, () => {
-    console.log(`Server is running on port ${constant.PORT}`);
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
 });
