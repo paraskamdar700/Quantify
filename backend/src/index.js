@@ -1,15 +1,17 @@
 import express from 'express';
-import dotenv from 'dotenv';
-import { PORT} from './constant.js';
+import dotenv from 'dotenv'; 
+import { checkDbConnection } from './db/db.js';
 
-
-const app = express();
 dotenv.config();
+const app = express();
 
 app.get('/', (req, res) => {
-    res.send('Hello Worldgbnhfdghb!');
+    res.send('Hello World!pk');
 })
 
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+checkDbConnection().then(()=>{
+    app.listen(process.env.PORT, () => {
+      console.log(`🚀 Server running on port ${process.env.PORT}`);
+    });
+
 });
