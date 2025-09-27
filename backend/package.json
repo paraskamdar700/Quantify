@@ -20,9 +20,9 @@
   "main": "src/index.js",
   "scripts": {
     "dev": "nodemon src/index.js",
-    "migrate": "node migrations/runMigrations.js",
-    "migrate:reset": "node migrations/resetDatabase.js",
-    "migrate:seed": "node migrations/seedData.js"
+    "migrate": "node src/migration/runMigrations.js",
+    "migrate:reset": "node src/migration/resetDatabase.js",
+    "migrate:seed": "node src/migration/seedData.js"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
