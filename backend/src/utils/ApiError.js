@@ -1,22 +1,25 @@
-class ApiError extends Error {
+export default class ApiError extends Error {
+  // FIX: The parameters are now in the correct order to match how you use it.
+  // statusCode comes first, then the message.
   constructor(
-    message="something went wrong", statusCode, error=[], stack=""
+    statusCode,
+    message = "Something went wrong",
+    errors = [],
+    stack = ""
   ) {
     super(message);
     this.statusCode = statusCode;
-    this.name = 'ApiError';
-    this.error = error;
-    this.stack = stack;
-    this.data= null;
+    this.data = null;
+    this.message = message;
     this.success = false;
+    this.errors = errors;
 
-    if(stack){
-        this.stack = stack
-    }
-    else{
+    if (stack) {
+        this.stack = stack;
+    } else {
         Error.captureStackTrace(this, this.constructor);
     }
+  }
+}
 
-}
-}
-export { ApiError };
+

@@ -10,7 +10,7 @@ dotenv.config({ path: path.resolve(dirname, '../../../.env') });
 console.log('Environment variables:', {
     DB_HOST: process.env.DB_HOST,
     DB_USER: process.env.DB_USER,
-    DB_NAME: process.env.DB_NAME,  // Check if this is defined
+    DB_NAME: process.env.DB_NAME, 
     DB_PORT: process.env.DB_PORT
 });
 
@@ -27,7 +27,7 @@ const config = {
       connectionLimit: 10,
       queueLimit: 0,
     },
-    port: process.env.PORT || 5000
+    port: process.env.PORT || 4000
   }
 };
 

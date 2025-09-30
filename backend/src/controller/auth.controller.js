@@ -12,82 +12,99 @@
 // - resetPassword() // Public
 
 import { Firm, User } from '../model/index.model.js';
-import { ApiError } from '../utils/ApiError.js';
+import ApiError from '../utils/ApiError.js';
 import ApiResponse from '../utils/ApiResponse.js';
 import database from '../config/database.js';
-import bcrypt from 'bcryptjs';
+import bcrypt from 'bcrypt';
 import { cleanUpFiles } from '../utils/cleanUpFile.js';
 import { uploadImage } from '../utils/cloudinary.js';
 import jwt from 'jsonwebtoken';
 
 
 const registerFirmAndOwner = async (req, res, next) => {
-
     const avatarLocalPath = req.files?.avatar?.[0]?.path;
 
     try {
         const { firmdata, userdata } = req.body;
 
         if (!firmdata?.firm_name || !firmdata?.gst_no) {
+            
             throw new ApiError(400, "Firm name and GST number are required.");
         }
-        
-        if (!userdata?.fullname || !userdata?.email || !userdata?.password || !userdata?.contact_no) {
+        if (!userdata?.fullname || !userdata?.email || !userdata?.password_hash || !userdata?.contact_no) {
+           
             throw new ApiError(400, "Full name, email, password, and contact number are required.");
         }
 
         const existingUser = await User.findByEmail(userdata.email);
-        if (existingUser?.length > 0) {
-            throw new ApiError(409, "User with this email already exists.");
-        }
+        const existingFirms = await Firm.findByFirmName(firmdata.firm_name);
+          
+            if (existingUser?.length > 0 && existingFirms?.length > 0) {
+                throw new ApiError(409, "User with this email and firm with this name already exists.");
+            }
 
-        const existingFirm = await Firm.findByFirmName(firmdata.firm_name);
-        if (existingFirm?.length > 0) {
-            throw new ApiError(409, "Firm with this name already exists.");
-        }
-
+ 
         const uploadedAvatar = avatarLocalPath ? await uploadImage(avatarLocalPath) : null;
 
         const result = await database.transaction(async (transaction) => {
-            const newFirm = await Firm.createFirm({
+            const firm = await Firm.createFirm({
                 firm_name: firmdata.firm_name,
                 gst_no: firmdata.gst_no,
                 firm_city: firmdata.firm_city || null,
-                firm_street: firmdata.firm_street || null,
+                firm_street: firmdata.firm_street || null
             }, { transaction });
-
-            const hashedPassword = await bcrypt.hash(userdata.password, 10);
-
-            const newOwner = await User.createUser({
+            console.log('Firm created:', firm);
+            const user = await User.createUser({
                 fullname: userdata.fullname,
                 contact_no: userdata.contact_no,
                 email: userdata.email,
-                password_hash: hashedPassword,
+                password_hash: await bcrypt.hash(userdata.password_hash, 10),
                 bio: userdata.bio || null,
-                firm_id: newFirm.id,
+                firm_id: firm[0].id,
                 role: 'OWNER',
-                avatar: uploadedAvatar?.secure_url || null,
+                avatar: uploadedAvatar?.secure_url || null 
             }, { transaction });
-
-            return { firm: newFirm, user: newOwner };
+            console.log('User created:', user);
+            return { firm, user }
         });
+        
+        console.log('Transaction result:', result);
 
-        const userResponse = { ...result.user.get({ plain: true }) };
-        delete userResponse.password_hash;
         
-       
-        return res.status(201).json(
-            new ApiResponse(201, "Firm and Owner registered successfully.", {
-                firm: result.firm,
-                user: userResponse,
-            })
+        res.status(201).json(
+            new ApiResponse(201, "Firm and Owner registered successfully",
+                {
+                    firm: {
+                        id: result.firm[0].id,
+                        firm_name: result.firm[0].firm_name,
+                        gst_no: result.firm[0].gst_no,
+                        firm_city: result.firm[0].firm_city,
+                        firm_street: result.firm[0].firm_street,
+
+                    },
+                    user: {
+                        id: result.user[0].id,
+                        fullname: result.user[0].fullname,
+                        contact_no: result.user[0].contact_no,
+                        email: result.user[0].email,
+                        role: result.user[0].role,
+                        avatar: result.user[0].avatar,
+                        bio: result.user[0].bio
+                    }
+                }
+            )
         );
-    } catch (error) {
-        next(error);
+    }
+    catch (error) {
         
-    } finally {
+        next(error);
+    }
+    finally {
+   
         if (avatarLocalPath) {
             cleanUpFiles(avatarLocalPath);
         }
     }
 };
+
+export { registerFirmAndOwner };
