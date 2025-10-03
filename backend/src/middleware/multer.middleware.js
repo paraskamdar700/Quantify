@@ -7,11 +7,9 @@ import fs from "fs";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// This creates an absolute path to your 'public/temp' folder from the project root
-// We go up two directories from 'src/middleware' to get to the 'backend' root
+
 const uploadDir = path.resolve(__dirname, "../../public/temp");
 
-// Create the directory if it doesn't exist to prevent ENOENT errors
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
