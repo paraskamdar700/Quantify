@@ -1,35 +1,4 @@
-1️⃣ Registration → Owner + Firm
-Client (browser)
-       |
-       | POST /register
-       | { fullname, email, password, firm_name, gst_no, city, street }
-       V
-Server (Backend)
-       |
-       | Creates Firm record
-       | Creates User record with role = OWNER
-       | Responds with success (no JWT yet)
-       V
-Owner is registered and linked to the firm
 
-
-
-
-Login → Get JWT
-Client (browser)
-       |
-       | POST /login
-       | { email, password }
-       V
-Server
-       |
-       | Validate credentials
-       | Generate JWT: 
-       | { id: user.id, role: user.role, Firm_id: user.Firm_id }
-       | Sign token with secret
-       V
-Client receives token:
-Authorization: Bearer <token>
 
 
 Protected Routes → Role-Based Access
@@ -51,4 +20,78 @@ Route Handler
        | if role === OWNER → allow adding ADMIN or STAFF
        V
 User is added to the same Firm
+
+
+
+🎯 HIGH PRIORITY - Complete These First
+1. Finish Auth Controller (You're 80% done)
+javascript
+// Complete these in auth.controller.js:
+- loginUser() ✅ (implement)
+- logoutUser() ✅ (implement) 
+- refreshToken() ✅ (implement)
+- getCurrentUser() ✅ (implement)
+2. Customer Controller (CRITICAL)
+javascript
+// controllers/customer.controller.js
+- createCustomer()     // For adding new customers
+- getCustomers()       // List all customers for a firm
+- getCustomer()        // Get specific customer
+- updateCustomer()     // Update customer details
+- deleteCustomer()     // Remove customer
+- searchCustomers()    // Search by name, contact, etc.
+3. Category Controller (NEEDED for Stock)
+javascript
+// controllers/category.controller.js
+- createCategory()     // Create product categories
+- getCategories()      // List categories for a firm
+- updateCategory()     // Update category
+- deleteCategory()     // Delete category
+⚡ MEDIUM PRIORITY - Business Logic
+4. Stock Controller (Inventory Management)
+javascript
+// controllers/stock.controller.js
+- addStock()           // Add new inventory items
+- updateStock()        // Update stock details
+- getStock()           // Get stock items
+- deleteStock()        // Remove stock
+- getLowStockAlerts()  // Alert for low inventory
+- updateStockQuantity() // When sales/purchases happen
+5. Order Controller (Core Business)
+javascript
+// controllers/order.controller.js
+- createOrder()        // Create new orders
+- getOrders()          // List orders with filters
+- getOrder()           // Get specific order
+- updateOrderStatus()  // PENDING → CONFIRMED → COMPLETED
+- cancelOrder()        // Cancel order
+- getOrderInvoice()    // Generate invoice
+🔄 LOW PRIORITY - Complete the System
+6. Payment Controller
+javascript
+// controllers/payment.controller.js
+- recordPayment()      // Record payments against orders
+- getPayments()        // List payments
+- getPaymentHistory()  // Customer payment history
+7. File Controller
+javascript
+// controllers/file.controller.js
+- uploadFile()         // Generic file upload
+- getFiles()           // Get files by entity
+- deleteFile()         // Remove files
+🚀 RECOMMENDED DEVELOPMENT ORDER:
+Complete Auth Controller (login, logout, refresh token)
+
+Customer Controller (essential for orders)
+
+Category Controller (prerequisite for stock)
+
+Stock Controller (inventory management)
+
+Order Controller (core business logic)
+
+Payment Controller (financial tracking)
+
+File Controller (attachments)
+
 

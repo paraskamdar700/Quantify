@@ -21,14 +21,14 @@ router.post('/register',
   ]),
   registerFirmAndOwner);
 router.post('/login', loginUser);
-router.post('/logout', logoutUser);
+router.post('/logout', verifyJwt, logoutUser);
 router.post('/refresh-token', refreshToken);
-router.post('/reset-password', verifyJwt, resetPassword);
-router.post('/update-avatar', verifyJwt, upload.fields([{ name: 'avatar', maxCount: 1 }]), updateAvatar);
-router.post('/update-bio',verifyJwt, updateBio);
-router.post('/update-contact',verifyJwt, updateContact);
-router.post('/update-fullname',verifyJwt, updateFullName);
-router.post('/update-email',verifyJwt, updateEmail);
-router.get('/getuser-details', verifyJwt, getCurrentUser );
+router.patch('/reset-password', verifyJwt, resetPassword);
+router.patch('/update-avatar', verifyJwt, upload.fields([{ name: 'avatar', maxCount: 1 }]), updateAvatar);
+router.patch('/update-bio', verifyJwt, updateBio);
+router.patch('/update-contact', verifyJwt, updateContact);
+router.patch('/update-fullname', verifyJwt, updateFullName);
+router.patch('/update-email', verifyJwt, updateEmail);
+router.get('/getuser-details', verifyJwt, getCurrentUser);
 
 export default router;

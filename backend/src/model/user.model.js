@@ -7,7 +7,7 @@ class User {
 
         const sql = `INSERT INTO user (fullname, contact_no, email, password_hash, role, avatar, bio, firm_id) 
                         VALUES(?,?,?,?,?,?,?,?)`;
-        const [result] = await db.query(sql, [
+        const result = await db.query(sql, [
             userdata.fullname,
             userdata.contact_no,
             userdata.email,
@@ -139,6 +139,14 @@ class User {
             id
         ]);
         return this.findById(id, options);
+    }
+    async updateUserRole(role, id, options={}){
+        const db = options.transaction || database;
+        const sql =`UPDATE user
+                    SET role =?
+                    WHERE id = ?`;
+        const result = await db.query(sql,[role, id]);
+        return result.affectedRows;
     }
 }
 export default new User();

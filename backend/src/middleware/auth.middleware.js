@@ -12,7 +12,7 @@ export const verifyJwt = async (req, res, next) => {
         }
 
         const decodedPayload = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-        
+      
         const user = await User.findById(decodedPayload?.userId);
 
         if (!user) {
@@ -23,6 +23,7 @@ export const verifyJwt = async (req, res, next) => {
             email: user.email,
             fullname: user.fullname,
             role: user.role,
+            firm_id: user.firm_id,
         };
         req.user = userResponse;
         next(); 

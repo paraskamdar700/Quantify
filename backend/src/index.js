@@ -35,13 +35,14 @@ app.use(express.static("public"));
 // --- Route Imports ---
 
 import authRouter from './routes/auth.routes.js';
+import userRouter from './routes/user.route.js';
 
 // --- API Routes ---
 app.get('/', (req, res) => {
     res.send('API is running!');
 });
 app.use("/api/v1/auth", authRouter);
-// app.use("/api/v1/user", userRouter);
+app.use("/api/v1/user", userRouter);
 // app.use("/api/v1/firm", firmRouter);
 
 // --- Error Handling Middleware (must be last) ---
