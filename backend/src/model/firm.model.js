@@ -63,6 +63,8 @@ class Firm {
         ]);
         return await this.findById(id, options);
     }
+
+   
 }
 
 export default new Firm();

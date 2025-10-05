@@ -7,7 +7,7 @@ class User {
 
         const sql = `INSERT INTO user (fullname, contact_no, email, password_hash, role, avatar, bio, firm_id) 
                         VALUES(?,?,?,?,?,?,?,?)`;
-        const result = await db.query(sql, [
+        const [result] = await db.query(sql, [
             userdata.fullname,
             userdata.contact_no,
             userdata.email,
@@ -42,7 +42,7 @@ class User {
     async findByFirmId(firmid, options = {}) {
         const db = options.transaction || database;
         const sql = `SELECT * FROM user WHERE firm_id =?`;
-        const reasult = await db.query(sql, [firmid])
+        const reasult = await db.query(sql, [firmid]);
         return reasult;
     }
     //Update Operation

@@ -1,24 +1,8 @@
-
 // user.controller.js - User Management Only
-
-// USER MANAGEMENT:
-// - getFirmUsers()          // List firm users
-// - listUsers()            // Protected - firm users only
-// - getUserDetails()        // Get user info
-// - getUserProfile()       // Protected - own profile
-
-// PROFILE MANAGEMENT:
-// - getMyProfile()          // Self profile
-// - updateMyProfile()       // Self updates
-// - changeMyPassword()      // Password change
-
-
 import ApiError from "../utils/ApiError.js";
 import { User, Firm} from "../model/index.model.js";
 import bcrypt from "bcrypt";
 import ApiResponse from "../utils/ApiResponse.js";
-import database from "../config/database.js";
-
 
 const registerStaff = async (req, res, next) => {
     try {
@@ -109,11 +93,76 @@ const updateStaffRole = async(req, res, next) =>{
             next(error);
         }
 };
-const deactivateUser = async (req, res, next) => {}
+const deactivateUserByPassword = async (req, res, next) => {
+    try {
+        const { email, newPassword } = req.body;
+        const firm_id = req.user.firm_id;
 
+        if (!email || !newPassword) {
+            throw new ApiError(400, 'Email and new password are required');
+        }
+        const user = await User.findByEmail(email);
+        if (!user) {
+            throw new ApiError(404, 'User not found');
+        }
+        if (user.firm_id !== firm_id) {
+            throw new ApiError(403, 'Forbidden: Cannot deactivate user from another firm');
+        }
+        if (user.role === 'OWNER') {
+            throw new ApiError(403, 'Forbidden: Cannot deactivate OWNER');
+        }
+        const newHashedPassword = await bcrypt.hash(newPassword, 10);
+        const affectedRows = await User.updatePasswordById(newHashedPassword, user.id);
+        if (affectedRows === 0) {
+            throw new ApiError(500, 'Failed to deactivate user');
+        }
+        return res.status(200)
+            .json(new ApiResponse(200, 'Password changed successfully', {
+                email: user.email
+            }));
+        
+}
+catch (error) {
+        next(error);
+    }
+};
+const listFirmUser = async (req, res, next) => {
+    try {
+        const firm_id = req.user.firm_id;
+        const users = await User.findByFirmId(firm_id);
+
+        const usersWithoutPasswords = users.map((user)=>{
+            const {password_hash,created_at,updated_at, ...userWithoutPassword} = user;
+            return userWithoutPassword;
+        });
+
+        return res.status(200)
+            .json(new ApiResponse(200, 'Firm users retrieved successfully', usersWithoutPasswords));
+    } catch (error) {
+        next(error);
+    }
+};
+const myProfile = async (req, res, next) => {
+    try{
+        const userId = req.user.id;
+        const user = await User.findById(userId);
+        if(!user){
+            throw new ApiError(404, 'User not found');
+        }
+        const {password_hash, created_at, updated_at, ...userWithoutPassword} = user;
+        return res.status(200)
+            .json(new ApiResponse(200, 'User profile retrieved successfully', userWithoutPassword));
+    }
+    catch(error){
+        next(error);      
+    }
+};
 
 export {
     registerStaff,
-    updateStaffRole
+    updateStaffRole,
+    deactivateUserByPassword,
+    listFirmUser,
+    myProfile    
 };
   
