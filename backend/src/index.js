@@ -6,23 +6,14 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import errorHandler from './middleware/errorHandler.js';
 
-
-// --- Setup for __dirname in ES Modules ---
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// --- Load Environment Variables ---
-// This ensures process.env variables are available throughout the app
-dotenv.config({ path: path.resolve(__dirname, '../../.env') }); // Adjusted path assuming /src/index.js
-console.log('Environment variables:', {
-    PORT: process.env.PORT,
-    DB_HOST: process.env.DB_HOST,
-   
-});
-// --- Create Express App Instance ---
+dotenv.config({ path: path.resolve(__dirname, '../../.env') }); 
+
 const app = express();
 
-// --- Core Middleware ---
+
 app.use(cors({
     origin: process.env.CORS_ORIGIN,
     credentials: true,
@@ -33,7 +24,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
 // --- Route Imports ---
-
 import authRouter from './routes/auth.routes.js';
 import userRouter from './routes/user.route.js';
 import firmRouter from './routes/firm.routes.js';
