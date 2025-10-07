@@ -6,23 +6,6 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import errorHandler from './middleware/errorHandler.js';
 
-
-// ===== GLOBAL ERROR HANDLERS =====
-process.on('unhandledRejection', (err) => {
-    console.log('UNHANDLED REJECTION! 💥 Shutting down...');
-    console.log('Error:', err.message);
-    console.log('Stack:', err.stack);
-    process.exit(1);
-});
-
-process.on('uncaughtException', (err) => {
-    console.log('UNCAUGHT EXCEPTION! 💥 Shutting down...');
-    console.log('Error:', err.message);
-    console.log('Stack:', err.stack);
-    process.exit(1);
-});
-// =================================
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 

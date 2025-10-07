@@ -19,22 +19,25 @@ class Customer {
     }
     async findById(id, options = {}) {
         const db = options.transaction || database;
-        const sql = `SELECT * FROM customer WHERE firm_id = ?`;
+        const sql = `SELECT * FROM customer WHERE id = ?`;
         const result = await db.query(sql,[id]);
         return result;
     }
-    async findByFirm(firmName, options = {}) {
-        const db = options.transaction || database;
-        const sql = `SELECT * FROM customer WHERE firm_name = ?`;
-        const [result] = await db.query(sql, [firmName]);
-        return result;
-    }
-    async findByNameSearch(name, options = {}) {
-        const db = options.transaction || database;
 
-        const sql = `SELECT * FROM customer WHERE fullname LIKE ?`;
-        const searchTerm = '%' + name + '%';
-        const result = await db.query(sql, [searchTerm]);
+    async searchByNameOrFirm(query, options = {}) {
+        const db = options.transaction || database;
+        const sql = `
+            SELECT * FROM customer 
+            WHERE fullname LIKE ? OR firm_name LIKE ?
+        `;
+        const searchTerm = '%' + query + '%';
+        const rows = await db.query(sql, [searchTerm, searchTerm]);
+        return rows;
+    }
+    async findByFirmId(id, options = {}) {
+        const db = options.transaction || database;
+        const sql = `SELECT * FROM customer WHERE firm_id = ?`;
+        const result = await db.query(sql,[id]);
         return result;
     }
     async updateCustomer(id, updateData, options = {}) {
@@ -45,7 +48,8 @@ class Customer {
                 contact_no = ?, 
                 gst_no= ?,
                 city = ?,
-                street = ?
+                street = ?,
+                firm_id = ?
                 WHERE id = ?`;
         const result = await db.query(sql, [
             updateData.fullname,
@@ -54,6 +58,7 @@ class Customer {
             updateData.gst_no,
             updateData.city,
             updateData.street,
+            updateData.firm_id,
             id
         ]);
         return await this.findById(id, options);

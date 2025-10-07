@@ -35,10 +35,11 @@ const addCustomer = async (req, res, next) => {
         next(error);
     }
 };
+
 const getCustomers = async (req, res, next) => {
     try {
         const firm_id = req.user.firm_id;
-        const customers = await Customer.findById(firm_id);
+        const customers = await Customer.findByFirmId(firm_id);
         res.status(200).json(new ApiResponse(200, "Customers retrieved successfully", customers));
     }
     catch (error) {
@@ -48,52 +49,75 @@ const getCustomers = async (req, res, next) => {
 
 const searchCustomers = async (req, res, next) => {
     try {
-        const { name } = req.body;
-        if (!name) {
-            throw new ApiError(400, "Search term is missing");
+        const { q } = req.query; 
+        if (!q) {
+            throw new ApiError(400, "Search query parameter 'q' is missing");
         }
-        const customers = await Customer.findByNameSearch(name);
-        res.status(200).json(new ApiResponse(200, "Search completed successfully", customers));
+        const customers = await Customer.searchByNameOrFirm(q);
+        if (customers.length === 0) {
+            throw new ApiError(200, "No customers found matching your search.");
+        }
+            const customData = customers.map((customer)=>{
+                const {created_at, updated_at, ...customerData} = customer;
+                return customerData;
+            })
+        res.status(200).json(new ApiResponse(200, "Customers retrieved successfully", customData));
+
     } catch (error) {
         next(error);
     }
 };
+
 const updateCustomer = async (req, res, next) => {
     try {
-        const { updatedCustomer } = req.body;
-        const firm_id = req.user.firm_id;
-        if (!updatedCustomer) {
-            throw new ApiError(400, "No data provided for update");
-        }
-        if (updatedCustomer.firm_name) {
-            const existingFirm = await Customer.findByFirm(updatedCustomer.firm_name);
-            if (existingFirm && existingFirm.firm_id !== firm_id) {
-                throw new ApiError(409, "Firm name already exists");
-            }
-        }
-        // Implementation for updating a customer
-        const { id } = req.params;
-        const existingCustomer = await Customer.findById(id);
-        if (!existingCustomer) {
-            throw new ApiError(404, 'Customer not found');
-        }
-        const updatedcustomer = {
-            fullname: updatedCustomer.fullname || existingCustomer.fullname,
-            firm_name: updatedCustomer.firm_name || existingCustomer.firm_name,
-            contact_no: updatedCustomer.contact_no || existingCustomer.contact_no,
-            gst_no: updatedCustomer.gst_no || existingCustomer.gst_no,
-            city: updatedCustomer.city || existingCustomer.city,
-            street: updatedCustomer.street || existingCustomer.street,
-            firm_id: existingCustomer.firm_id
+        const { id } = req.params; 
+        const firmId = req.user.firm_id; 
+        const { fullname, firm_name, contact_no, gst_no, city, street } = req.body;
+        const updateData = { fullname, firm_name, contact_no, gst_no, city, street };
+        if (!id) {
+            throw new ApiError(400, "Customer ID is required.");
         }
 
-        const updated = await Customer.updateCustomer(id, updatedcustomer);
-        res.status(200).json(new ApiResponse(200, 'Customer updated successfully', updated));
+        if (Object.keys(updateData).length === 0) {
+            throw new ApiError(400, "No data provided for update.");
+        }
+
+        const existingCustomer = await Customer.findById(id);
+        if (!existingCustomer || existingCustomer[0].firm_id !== firmId) {
+            throw new ApiError(404, 'Customer not found for this firm.');
+        }
+        if(updateData.fullname === existingCustomer[0].fullname &&
+            updateData.firm_name === existingCustomer[0].firm_name &&
+            updateData.contact_no === existingCustomer[0].contact_no &&
+            updateData.gst_no === existingCustomer[0].gst_no &&
+            updateData.city === existingCustomer[0].city &&
+            updateData.street === existingCustomer[0].street){
+                throw new ApiError(400, "No changes detected in the update data.");
+            }
+        const updatedcustomer = {
+            fullname: updateData.fullname || existingCustomer.fullname,
+            firm_name: updateData.firm_name || existingCustomer.firm_name,
+            contact_no: updateData.contact_no || existingCustomer.contact_no,
+            gst_no: updateData.gst_no || existingCustomer.gst_no,
+            city: updateData.city || existingCustomer.city,
+            street: updateData.street || existingCustomer.street,
+            firm_id: existingCustomer[0].firm_id
+        }
+
+        const updatedCustomer = await Customer.updateCustomer(id, updatedcustomer);
+
+        if (!updatedCustomer) {
+            throw new ApiError(404, 'Customer not found or no changes were made.');
+        }
+
+        res.status(200).json(new ApiResponse(200, 'Customer updated successfully', updatedCustomer));
+
     } catch (error) {
         next(error);
     }
-
 };
+
+
 //deleteCustomer controller will be implemented later when all child tables of customer will be created
 const deleteCustomer = async (req, res, next) => {
     // Implementation for deleting a customer
