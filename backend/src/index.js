@@ -7,22 +7,30 @@ import { fileURLToPath } from 'url';
 import errorHandler from './middleware/errorHandler.js';
 
 
-// --- Setup for __dirname in ES Modules ---
+// ===== GLOBAL ERROR HANDLERS =====
+process.on('unhandledRejection', (err) => {
+    console.log('UNHANDLED REJECTION! 💥 Shutting down...');
+    console.log('Error:', err.message);
+    console.log('Stack:', err.stack);
+    process.exit(1);
+});
+
+process.on('uncaughtException', (err) => {
+    console.log('UNCAUGHT EXCEPTION! 💥 Shutting down...');
+    console.log('Error:', err.message);
+    console.log('Stack:', err.stack);
+    process.exit(1);
+});
+// =================================
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// --- Load Environment Variables ---
-// This ensures process.env variables are available throughout the app
-dotenv.config({ path: path.resolve(__dirname, '../../.env') }); // Adjusted path assuming /src/index.js
-console.log('Environment variables:', {
-    PORT: process.env.PORT,
-    DB_HOST: process.env.DB_HOST,
-   
-});
-// --- Create Express App Instance ---
+dotenv.config({ path: path.resolve(__dirname, '../../.env') }); 
+
 const app = express();
 
-// --- Core Middleware ---
+
 app.use(cors({
     origin: process.env.CORS_ORIGIN,
     credentials: true,
@@ -33,11 +41,12 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
 // --- Route Imports ---
-
 import authRouter from './routes/auth.routes.js';
-import userRouter from './routes/user.route.js';
+import userRouter from './routes/user.routes.js';
 import firmRouter from './routes/firm.routes.js';
 import customerRouter from './routes/customer.routes.js';
+// import categoryRouter from './routes/category.routes.js';
+// import stockRouter from './routes/stock.routes.js';
 // --- API Routes ---
 app.get('/', (req, res) => {
     res.send('API is running!');
@@ -46,6 +55,8 @@ app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/firm", firmRouter);
 app.use("/api/v1/customer", customerRouter);
+// app.use("/api/v1/category", categoryRouter);
+// app.use("/api/v1/category", stockRouter);
 
 // --- Error Handling Middleware (must be last) ---
 app.use(errorHandler);
