@@ -1,7 +1,7 @@
 // user.controller.js - User Management Only
 import ApiError from "../utils/ApiError.js";
 import { User, Firm} from "../model/index.model.js";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import ApiResponse from "../utils/ApiResponse.js";
 
 const registerStaff = async (req, res, next) => {

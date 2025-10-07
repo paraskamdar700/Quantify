@@ -6,6 +6,23 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import errorHandler from './middleware/errorHandler.js';
 
+
+// ===== GLOBAL ERROR HANDLERS =====
+process.on('unhandledRejection', (err) => {
+    console.log('UNHANDLED REJECTION! 💥 Shutting down...');
+    console.log('Error:', err.message);
+    console.log('Stack:', err.stack);
+    process.exit(1);
+});
+
+process.on('uncaughtException', (err) => {
+    console.log('UNCAUGHT EXCEPTION! 💥 Shutting down...');
+    console.log('Error:', err.message);
+    console.log('Stack:', err.stack);
+    process.exit(1);
+});
+// =================================
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -25,10 +42,10 @@ app.use(express.static("public"));
 
 // --- Route Imports ---
 import authRouter from './routes/auth.routes.js';
-import userRouter from './routes/user.route.js';
+import userRouter from './routes/user.routes.js';
 import firmRouter from './routes/firm.routes.js';
 import customerRouter from './routes/customer.routes.js';
-import categoryRouter from './routes/category.routes.js';
+// import categoryRouter from './routes/category.routes.js';
 // import stockRouter from './routes/stock.routes.js';
 // --- API Routes ---
 app.get('/', (req, res) => {
@@ -38,7 +55,7 @@ app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/firm", firmRouter);
 app.use("/api/v1/customer", customerRouter);
-app.use("/api/v1/category", categoryRouter);
+// app.use("/api/v1/category", categoryRouter);
 // app.use("/api/v1/category", stockRouter);
 
 // --- Error Handling Middleware (must be last) ---

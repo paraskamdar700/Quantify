@@ -2,7 +2,7 @@ import { Firm, User } from '../model/index.model.js';
 import ApiError from '../utils/ApiError.js';
 import ApiResponse from '../utils/ApiResponse.js';
 import database from '../config/database.js';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { cleanUpFiles } from '../utils/cleanUpFile.js';
 import { uploadImage } from '../utils/cloudinary.js';
 import jwt from 'jsonwebtoken';
