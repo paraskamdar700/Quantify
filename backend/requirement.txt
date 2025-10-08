@@ -1,42 +1,6 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 javascript
 // Complete these in auth.controller.js:
 - loginUser() ✅ (implement)
