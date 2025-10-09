@@ -1,8 +1,6 @@
 
 
 
-🎯 HIGH PRIORITY - Complete These First
-1. Finish Auth Controller (You're 80% done)
 javascript
 // Complete these in auth.controller.js:
 - loginUser() ✅ (implement)
@@ -11,13 +9,13 @@ javascript
 - getCurrentUser() ✅ (implement)
 2. Customer Controller (CRITICAL)
 javascript
-// controllers/customer.controller.js
+// controllers/customer.controller.js ✅ (implement)
 - createCustomer()     // For adding new customers
 - getCustomers()       // List all customers for a firm
-- getCustomer()        // Get specific customer
 - updateCustomer()     // Update customer details
 - deleteCustomer()     // Remove customer
 - searchCustomers()    // Search by name, contact, etc.
+
 3. Category Controller (NEEDED for Stock)
 javascript
 // controllers/category.controller.js
