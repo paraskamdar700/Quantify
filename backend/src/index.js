@@ -29,7 +29,7 @@ import userRouter from './routes/user.routes.js';
 import firmRouter from './routes/firm.routes.js';
 import customerRouter from './routes/customer.routes.js';
 import categoryRouter from './routes/category.routes.js';
-// import stockRouter from './routes/stock.routes.js';
+import stockRouter from './routes/stock.routes.js';
 // --- API Routes ---
 app.get('/', (req, res) => {
     res.send('API is running!');
@@ -39,7 +39,7 @@ app.use("/api/v1/user", userRouter);
 app.use("/api/v1/firm", firmRouter);
 app.use("/api/v1/customer", customerRouter);
 app.use("/api/v1/category", categoryRouter);
-// app.use("/api/v1/category", stockRouter);
+app.use("/api/v1/stock", stockRouter);
 
 // --- Error Handling Middleware (must be last) ---
 app.use(errorHandler);
