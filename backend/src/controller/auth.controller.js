@@ -121,7 +121,7 @@ const loginUser = async (req, res, next) => {
     try {
         const email = req.body.email?.trim();
         const password = req.body.password?.trim();
-
+    
         if (!email || !password) {
             throw new ApiError(400, "Email and password are required.");
         }

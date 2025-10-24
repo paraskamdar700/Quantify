@@ -94,13 +94,9 @@ class Stock {
         
         return null; 
     }
-    
-    
 
 
-   // ... (in your Stock class)
-
-async adjustQuantity(id, firmId, quantityChange, options = {}) {
+    async adjustQuantity(id, firmId, quantityChange, options = {}) {
     const db = options.transaction || database;
     const sql = `
         UPDATE stock SET quantity_available = quantity_available + ? 
@@ -114,7 +110,17 @@ async adjustQuantity(id, firmId, quantityChange, options = {}) {
     }
     
     return null; // Return null if no rows were updated
-}
+    }
+    
+    async quantityAvailable(id, quantity, options = {}){
+      const db = options.transaction || database;
+      const sql = `SELECT quantity_available, stock_name FROM stock WHERE id = ?`;
+      const result = await db.query(sql, [id]);
+      if (result.length > 0) {
+          return result[0];
+      }
+      throw new Error("Stock item not found.");
+    }
 
       async softDeleteStockById(id) {
         const sql = `UPDATE stock SET is_active = FALSE WHERE id = ?`;
