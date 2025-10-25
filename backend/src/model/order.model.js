@@ -43,7 +43,7 @@ class Order {
         
         let whereClauses = ['firm_id = ?'];
         let params = [firmId];
-        let countParams = [firmId]; // Params for count query
+        let countParams = [firmId]; 
 
         Object.keys(filters).forEach(key => {
             whereClauses.push(`${key} = ?`);
@@ -93,8 +93,6 @@ class Order {
 
     async removeById(id, firmId, options = {}) {
         const db = options.transaction || database;
-        // Important: In a real app, you must first delete related order_stock items.
-        // This should be handled in a transaction in the controller.
         const sql = `DELETE FROM ORDERS WHERE id = ? AND firm_id = ?`;
         const [result] = await db.query(sql, [id, firmId]);
         return result.affectedRows;
@@ -102,6 +100,30 @@ class Order {
     async findOrdersWithPendingPayment(firmId, pagination = {}) {
         const db = database;
         const whereSql = `firm_id = ? AND (payment_status = 'UNPAID' OR payment_status = 'PARTIALLY_PAID')`;
+        const params = [firmId];
+        const countParams = [firmId];
+
+        const countSql = `SELECT COUNT(*) as totalCount FROM ORDERS WHERE ${whereSql}`;
+        const [countResult] = await db.query(countSql, countParams);
+        const totalCount = countResult.totalCount || 0;
+
+        if (totalCount === 0) {
+            return { rows: [], totalCount: 0 };
+        }
+
+        let dataSql = `SELECT * FROM ORDERS WHERE ${whereSql} ORDER BY order_date ASC`; // Oldest pending first
+        if (pagination.limit !== undefined && pagination.offset !== undefined) {
+            dataSql += ` LIMIT ? OFFSET ?`;
+            params.push(pagination.limit, pagination.offset);
+        }
+
+        const rows = await db.query(dataSql, params);
+        return { rows, totalCount };
+    }
+
+    async findOrdersWithPendingDelivery(firmId, pagination = {}) {
+        const db = database;
+        const whereSql = `firm_id = ? AND (delivery_status = 'PENDING' OR delivery_status = 'PARTIALLY_DELIVERED')`;
         const params = [firmId];
         const countParams = [firmId];
 
