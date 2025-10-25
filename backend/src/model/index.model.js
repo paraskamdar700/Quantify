@@ -5,5 +5,6 @@ import Category from './category.model.js';
 import Stock from './stock.model.js';
 import Order from './order.model.js';
 import OrderStock from './orderStock.model.js';
+import Payment from './payment.model.js';
 
-export { Firm, User, Customer, Category, Stock, Order, OrderStock };
+export { Firm, User, Customer, Category, Stock, Order, OrderStock, Payment };
