@@ -99,6 +99,29 @@ class Order {
         const [result] = await db.query(sql, [id, firmId]);
         return result.affectedRows;
     }
+    async findOrdersWithPendingPayment(firmId, pagination = {}) {
+        const db = database;
+        const whereSql = `firm_id = ? AND (payment_status = 'UNPAID' OR payment_status = 'PARTIALLY_PAID')`;
+        const params = [firmId];
+        const countParams = [firmId];
+
+        const countSql = `SELECT COUNT(*) as totalCount FROM ORDERS WHERE ${whereSql}`;
+        const [countResult] = await db.query(countSql, countParams);
+        const totalCount = countResult.totalCount || 0;
+
+        if (totalCount === 0) {
+            return { rows: [], totalCount: 0 };
+        }
+
+        let dataSql = `SELECT * FROM ORDERS WHERE ${whereSql} ORDER BY order_date ASC`; // Oldest pending first
+        if (pagination.limit !== undefined && pagination.offset !== undefined) {
+            dataSql += ` LIMIT ? OFFSET ?`;
+            params.push(pagination.limit, pagination.offset);
+        }
+
+        const rows = await db.query(dataSql, params);
+        return { rows, totalCount };
+    }
 }
 
 export default new Order();
