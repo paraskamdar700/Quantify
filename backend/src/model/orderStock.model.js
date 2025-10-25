@@ -27,6 +27,18 @@ class OrderStock {
         }
         throw new Error("Failed to create order item.");
     }
+    async findById(id, options = {}) {
+        const db = options.transaction || database;
+        const sql = `SELECT * FROM order_stock WHERE id = ?`;
+        const [[row]] = await db.query(sql, [id]);
+        return row || null;
+    }
+    async findAllByOrderId(orderId, options = {}) {
+        const db = options.transaction || database;
+        const sql = `SELECT * FROM order_stock WHERE order_id = ?`;
+        const [rows] = await db.query(sql, [orderId]);
+        return rows;
+    }
 
     async findByOrderId(orderId, options = {}) {
         const db = options.transaction || database;

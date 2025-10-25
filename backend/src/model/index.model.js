@@ -6,5 +6,6 @@ import Stock from './stock.model.js';
 import Order from './order.model.js';
 import OrderStock from './orderStock.model.js';
 import Payment from './payment.model.js';
+import Delivery from './delivery.model.js';
 
-export { Firm, User, Customer, Category, Stock, Order, OrderStock, Payment };
+export { Firm, User, Customer, Category, Stock, Order, OrderStock, Payment, Delivery };

@@ -32,6 +32,7 @@ import categoryRouter from './routes/category.routes.js';
 import stockRouter from './routes/stock.routes.js';
 import orderRouter from './routes/order.routes.js';
 import paymentRouter from './routes/payment.routes.js';
+import deliveryRouter from './routes/delivery.routes.js';
 
 // --- API Routes ---
 app.get('/', (req, res) => {
@@ -45,6 +46,7 @@ app.use("/api/v1/category", categoryRouter);
 app.use("/api/v1/stock", stockRouter);
 app.use("/api/v1/order", orderRouter);
 app.use("/api/v1/payment", paymentRouter);
+app.use("/api/v1/delivery", deliveryRouter);
 
 // --- Error Handling Middleware (must be last) ---
 app.use(errorHandler);
