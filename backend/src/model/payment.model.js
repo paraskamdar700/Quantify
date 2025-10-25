@@ -27,9 +27,6 @@ class Payment {
         throw new Error("Failed to record payment.");
     }
 
-    /**
-     * Finds a single payment by its ID and firm ID.
-     */
     async findById(id, firmId, options = {}) {
         const db = options.transaction || database;
         const sql = `SELECT * FROM payment WHERE id = ? AND firm_id = ?`;
@@ -37,9 +34,6 @@ class Payment {
         return row || null;
     }
 
-    /**
-     * Finds all payments for a specific order.
-     */
     async findByOrderId(orderId, options = {}) {
         const db = options.transaction || database;
         const sql = `SELECT * FROM payment WHERE order_id = ? ORDER BY payment_date DESC`;
@@ -47,9 +41,7 @@ class Payment {
         return rows;
     }
 
-    /**
-     * Updates a payment record.
-     */
+ 
     async updateById(id, data, options = {}) {
         const db = options.transaction || database;
         const setClauses = Object.keys(data).map(key => `${key} = ?`).join(', ');
@@ -60,9 +52,7 @@ class Payment {
         return result.affectedRows;
     }
 
-    /**
-     * Deletes a payment record by its ID.
-     */
+
     async removeById(id, options = {}) {
         const db = options.transaction || database;
         const sql = `DELETE FROM payment WHERE id = ?`;
@@ -70,9 +60,7 @@ class Payment {
         return result.affectedRows;
     }
 
-    /**
-     * Calculates the total amount paid for a specific order.
-     */
+ 
     async calculateTotalPaid(orderId, options = {}) {
         const db = options.transaction || database;
         const sql = `SELECT SUM(amount_paid) as totalPaid FROM payment WHERE order_id = ?`;
