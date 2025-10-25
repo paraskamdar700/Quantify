@@ -5,20 +5,21 @@ import database from '../config/database.js';
 
 
 const updateOrderStatus = async (order_id, firm_id, transaction) => {
-    const [order] = await Order.findById(order_id, firm_id, { transaction });
+    const order = await Order.findById(order_id, firm_id, { transaction });
     if (!order) throw new ApiError(404, "Order not found during status update.");
 
     const totalPaid = await Payment.calculateTotalPaid(order_id, { transaction });
+
     let newPaymentStatus = 'UNPAID';
 
-    if (totalPaid >= order.total_amount) {
+    if (totalPaid >= order[0].total_amount) {
         newPaymentStatus = 'PAID';
     } else if (totalPaid > 0) {
         newPaymentStatus = 'PARTIALLY_PAID';
     }
 
     let newOrderStatus = 'PENDING';
-    if (newPaymentStatus === 'PAID' && order.delivery_status === 'DELIVERED') {
+    if (newPaymentStatus === 'PAID' && order[0].delivery_status === 'DELIVERED') {
         newOrderStatus = 'COMPLETED';
     }
 
