@@ -66,18 +66,52 @@ const addStock = async (req, res, next) => {
 const getStock = async (req, res, next) => {
     try {
         const firm_id = req.user.firm_id;
-        const stockItems = await Stock.findByFirmId(firm_id);
+        
+        // Extract filters and pagination from Query Parameters
+        const { category_id, search, startDate, endDate, page, limit } = req.query;
+
+        const filters = {
+            category_id: category_id ? parseInt(category_id) : undefined,
+            search: search || undefined,
+            startDate: startDate || undefined, // Format: YYYY-MM-DD
+            endDate: endDate || undefined      // Format: YYYY-MM-DD
+        };
+
+        // Pagination Logic
+        const pageNum = parseInt(page, 10) || 1;
+        const limitNum = parseInt(limit, 10) || 10;
+        const offset = (pageNum - 1) * limitNum;
+
+        // Call model with pagination options
+        const { rows: stockItems, totalCount } = await Stock.findByFirmId(firm_id, filters, { limit: limitNum, offset });
+
+        // Calculate pagination metadata
+        const totalPages = Math.ceil(totalCount / limitNum);
+
+        const responsePayload = {
+            stockItems,
+            pagination: {
+                totalItems: totalCount,
+                totalPages,
+                currentPage: pageNum,
+                itemsPerPage: limitNum,
+                hasNextPage: pageNum < totalPages,
+                hasPrevPage: pageNum > 1
+            }
+        };
 
         return res.status(200).json(
-            new ApiResponse(200, "Stock items retrieved successfully", stockItems)
+            new ApiResponse(200, "Stock items retrieved successfully", responsePayload)
         );
     } catch (error) {
         next(error);
     }
 };
 
+
 const updateStock = async (req, res, next) => {
     try {
+        
         const stockId = req.params.id;
         const firm_id = req.user.firm_id;
         const { stock_name, sku_code, unit, quantity_available, buy_price, weight_per_unit, weight_unit, low_unit_threshold, category_id } = req.body;

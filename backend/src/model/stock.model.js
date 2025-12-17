@@ -36,6 +36,7 @@ class Stock {
         return rows || null;
     }
 
+
     async findById(id, firmId, options = {}) {
         const db = options.transaction || database;
         const sql = `SELECT * FROM stock WHERE id = ? AND firm_id = ? AND is_active = TRUE`;
@@ -46,14 +47,63 @@ class Stock {
         return rows;
     }
 
-    async findByFirmId(firmId, options = {}) {
+    async findByFirmId(firmId, filters = {}, pagination = {}, options = {}) {
         const db = options.transaction || database;
-        const sql = `SELECT * FROM stock WHERE firm_id = ? AND is_active = TRUE`;
-        const rows = await db.query(sql, [firmId]);
-        if (rows.length === 0) {
-            throw new Error("No stock items found for this firm.");
+        
+        // Base SQL fragment for WHERE clauses
+        let baseSql = `
+            FROM stock s
+            LEFT JOIN category c ON s.category_id = c.id
+            WHERE s.firm_id = ? AND s.is_active = TRUE
+        `;
+        
+        const params = [firmId];
+        const countParams = [firmId]; // Separate params for the count query
+
+        // 1. Filter by Category
+        if (filters.category_id) {
+            baseSql += ` AND s.category_id = ?`;
+            params.push(filters.category_id);
+            countParams.push(filters.category_id);
         }
-        return rows;
+
+        // 2. Search by Name or SKU
+        if (filters.search) {
+            baseSql += ` AND (s.stock_name LIKE ? OR s.sku_code LIKE ?)`;
+            const searchTerm = `%${filters.search}%`;
+            params.push(searchTerm, searchTerm);
+            countParams.push(searchTerm, searchTerm);
+        }
+
+        // 3. Filter by Date (Created At)
+        if (filters.startDate) {
+            baseSql += ` AND DATE(s.created_at) >= ?`;
+            params.push(filters.startDate);
+            countParams.push(filters.startDate);
+        }
+        if (filters.endDate) {
+            baseSql += ` AND DATE(s.created_at) <= ?`;
+            params.push(filters.endDate);
+            countParams.push(filters.endDate);
+        }
+
+        // --- 1. Get Total Count ---
+        const countSql = `SELECT COUNT(*) as totalCount ${baseSql}`;
+        const [countResult] = await db.query(countSql, countParams);
+        const totalCount = countResult.totalCount || 0;
+
+        // --- 2. Get Paginated Data ---
+        let dataSql = `SELECT s.*, c.category_name ${baseSql} ORDER BY s.created_at DESC`;
+
+        if (pagination.limit !== undefined && pagination.offset !== undefined) {
+            dataSql += ` LIMIT ? OFFSET ?`;
+            params.push(pagination.limit, pagination.offset);
+        }
+
+        const rows = await db.query(dataSql, params);
+        
+        // Return object with rows and totalCount
+        return { rows, totalCount };
     }
 
     async findLowStockByFirmId(firmId, options = {}) {
@@ -126,6 +176,13 @@ class Stock {
         const sql = `UPDATE stock SET is_active = FALSE WHERE id = ?`;
         const result = await database.query(sql, [id]);
         return result.affectedRows;
+    }
+    
+    async findByCategoryId(categoryId, options = {}) {
+        const db = options.transaction || database;
+        const sql = `SELECT * FROM stock WHERE category_id = ? AND is_active = TRUE`;
+        const rows = await db.query(sql, [categoryId]);
+        return rows;
     }
     
 }

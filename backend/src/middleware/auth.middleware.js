@@ -5,9 +5,12 @@ import {  User } from '../model/index.model.js';
 
 export const verifyJwt = async (req, res, next) => {
     try {
-        const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", "");
 
+
+
+        const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", "");
         if (!token) {
+            console.error("❌ Token missing in both Cookie and Header");
             return next(new ApiError(401, "Unauthorized: Token not found"));
         }
 

@@ -57,7 +57,7 @@ class Category{
 
     async deleteCategoryById(id) {
         const sql = `DELETE FROM category WHERE id = ?`;
-        const [result] = await database.query(sql, [id]);
+        const result = await database.query(sql, [id]);
         return result.affectedRows;
     }
 
