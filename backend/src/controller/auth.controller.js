@@ -152,6 +152,7 @@ const loginUser = async (req, res, next) => {
             secure: process.env.NODE_ENV === 'production', 
             sameSite: 'None',
             maxAge: 24 * 60 * 60 * 1000
+            // 24 * 60 * 
         };
         const userResponse = {
             id: user.id,
@@ -169,10 +170,10 @@ const loginUser = async (req, res, next) => {
             firm_city: firm.firm_city,
             firm_street: firm.firm_street
         };
-
+   
         return res
             .status(200)
-            .cookie("accessToken", accessToken, options)
+            .cookie("accessToken", accessToken, options) 
             .cookie("refreshToken", refreshToken, options)
             .json({
                 success: true,
@@ -240,6 +241,7 @@ const logoutUser = async (req, res, next) => {
             maxAge: 0
         };
         return res.status(200)
+        .clearCookie("accessToken", options)
         .clearCookie("refreshToken", options)
         .json(
             new ApiResponse(200, "User logged out successfully", null)

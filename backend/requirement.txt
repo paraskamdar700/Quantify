@@ -119,3 +119,50 @@ What it is: This setting adds a custom text prefix to all order numbers generate
 How it works: The application will prepend this string to the auto - incrementing order number.This helps in branding and quick identification of documents.
 
     Example: A company named "Innovatech" sets its order number prefix to INV -.When they receive their 101st order, the system generates the Order Number INV - 101. This makes it immediately clear that INV - 101 is an order document, distinct from a customer ID or an invoice number(which might have its own prefix like INNO -).
+
+
+
+3. Payment Controller
+javascript
+// payment.controller.js
+- recordPayment()         // Record payment (full/partial)
+- getPayment()            // Get single payment details
+- listOrderPayments()     // Get all payments for an order
+- updatePayment()         // Update payment details
+- deletePayment()         // Remove payment (with validations)
+- getPendingPayments()    // Orders with balance > 0
+- getPaymentSummary()     // Payment progress per order
+🚚 Delivery Management Controllers
+4. Delivery Controller
+javascript
+// delivery.controller.js
+- recordDelivery()        // Record delivery of order items
+- getDelivery()           // Get single delivery details
+- listOrderDeliveries()   // Get all deliveries for an order
+- updateDelivery()        // Update delivery details
+- deleteDelivery()        // Remove delivery (with stock adjustment)
+- getPendingDeliveries()  // Orders with undelivered items
+- getDeliverySummary()    // Delivery progress per order
+📊 Dashboard & Analytics Controllers
+5. Dashboard Controller
+javascript
+// dashboard.controller.js
+- getOrderDashboard()     // Overview: total orders, pending, completed
+- getPaymentDashboard()   // Payment analytics, pending amounts
+- getDeliveryDashboard()  // Delivery analytics, pending deliveries
+- getSalesAnalytics()     // Sales reports, revenue trends
+- getCustomerOrders()     // Order history for specific customer
+🔧 Utility Controllers
+6. Invoice Controller
+javascript
+// invoice.controller.js
+- generateInvoice()       // Generate invoice number
+- downloadInvoice()       // Download invoice PDF
+- sendInvoice()           // Email invoice to customer
+
+
+
+
+💡 Key Business Logic Controllers:
+
+updateStockOnDelivery() - Auto-updates inventory when delivery recorded

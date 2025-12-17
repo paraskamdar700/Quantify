@@ -1,6 +1,6 @@
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
-import {Firm, User, Customer, Category} from "../model/index.model.js"
+import {Firm, User, Customer, Category,Stock} from "../model/index.model.js"
 import database from "../config/database.js";
 
 
@@ -133,6 +133,11 @@ const deleteCategory = async (req, res, next) => {
         const existingCategoryArray = await Category.findById(categoryId);
         if (!existingCategoryArray || existingCategoryArray.length === 0) {
             throw new ApiError(404, "Category not found.");
+        }
+
+        const stockUsingCategory = await Stock.findByCategoryId(categoryId);
+        if (stockUsingCategory && stockUsingCategory.length > 0) {
+            throw new ApiError(409, "Cannot delete category because it is currently in use by one or more stock items.");
         }
 
         const existingCategory = existingCategoryArray;
