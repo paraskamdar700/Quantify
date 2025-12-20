@@ -17,7 +17,7 @@ const app = express();
 app.use(cors({
     origin: process.env.CORS_ORIGIN,
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    methods: ['GET', 'POST', 'PUT','PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
@@ -37,6 +37,7 @@ import stockRouter from './routes/stock.routes.js';
 import orderRouter from './routes/order.routes.js';
 import paymentRouter from './routes/payment.routes.js';
 import deliveryRouter from './routes/delivery.routes.js';
+import invoiceRouter from './routes/invoice.routes.js';
 
 // --- API Routes ---
 app.get('/', (req, res) => {
@@ -49,9 +50,9 @@ app.use("/api/v1/customer", customerRouter);
 app.use("/api/v1/category", categoryRouter);
 app.use("/api/v1/stock", stockRouter);
 app.use("/api/v1/order", orderRouter);
-app.use("/api/v1/payment", paymentRouter);
+app.use("/api/v1/payments", paymentRouter);
 app.use("/api/v1/delivery", deliveryRouter);
-
+app.use("/api/v1/invoice", invoiceRouter);
 // --- Error Handling Middleware (must be last) ---
 app.use(errorHandler);
 

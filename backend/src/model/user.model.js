@@ -7,7 +7,7 @@ class User {
 
         const sql = `INSERT INTO user (fullname, contact_no, email, password_hash, role, avatar, bio, firm_id) 
                         VALUES(?,?,?,?,?,?,?,?)`;
-        const [result] = await db.query(sql, [
+        const result = await db.query(sql, [
             userdata.fullname,
             userdata.contact_no,
             userdata.email,
@@ -28,7 +28,7 @@ class User {
     // Read Operations
     async findById(id, options = {}) {
         const db = options.transaction || database;
-         const sql = `SELECT * FROM user WHERE id=?`;
+         const sql = `SELECT * FROM user WHERE id=? AND is_active = TRUE`;
         const result = await db.query(sql, [id]);
         return result[0];
     }
@@ -41,7 +41,7 @@ class User {
     }
     async findByFirmId(firmid, options = {}) {
         const db = options.transaction || database;
-        const sql = `SELECT * FROM user WHERE firm_id =?`;
+        const sql = `SELECT * FROM user WHERE firm_id =? AND is_active = TRUE`;
         const reasult = await db.query(sql, [firmid]);
         return reasult;
     }
@@ -62,6 +62,28 @@ class User {
             id
         ]);
         return await this.findById(id, options);
+    }
+
+    async updateById(id, data) {
+        // Remove undefined keys just in case
+        Object.keys(data).forEach(key => data[key] === undefined && delete data[key]);
+        
+        if (Object.keys(data).length === 0) return this.findById(id);
+
+        // Dynamically build the SET clause (e.g., "bio = ?, contact_no = ?")
+        const setClauses = Object.keys(data).map(key => `${key} = ?`).join(', ');
+        const values = [...Object.values(data), id];
+
+        const sql = `UPDATE user SET ${setClauses} WHERE id = ?`;
+        
+        // Execute update
+        await database.query(sql, values);
+
+        // Return the fresh user object
+        // (Assuming you have a findById method that returns the user object, usually [row])
+        const result = await this.findById(id);
+
+        return Array.isArray(result) ? result[0] : result;
     }
 
     async updatePasswordById(password_hash, id, options = {}) {

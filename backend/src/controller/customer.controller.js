@@ -7,7 +7,6 @@ const addCustomer = async (req, res, next) => {
     try {
         const { fullname, firm_name, contact_no, gst_no, city, street } = req.body;
         const firm_id = req.user.firm_id;
-        console.log(firm_id);
         if (!fullname || !firm_name) {
             throw new ApiError(400, "fullname & Firm name is missing");
         }

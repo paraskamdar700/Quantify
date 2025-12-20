@@ -1,8 +1,3 @@
-// OWNER ONLY ROUTES:
-// - getMyFirm()          // Get basic firm info (for logged-in user's firm)
-// - updateFirmDetails()   // Update firm information
-// - deleteFirm()           // Protected - OWNER only
-// - getFirmSettings()     // Get firm settings
 
 import ApiError from "../utils/ApiError.js";
 import { User, Firm } from "../model/index.model.js";

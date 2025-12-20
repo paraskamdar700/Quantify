@@ -10,18 +10,13 @@ import database from '../config/database.js';
 const updateOrderStockStatus = async (orderStockId, firmId, transaction) => {
     // 1. Calculate the new total delivered quantity for this item
     const totalDelivered = await Delivery.calculateTotalDelivered(orderStockId, { transaction });
-
     // 2. Update the order_stock item with this new total
-    await OrderStock.updateById(orderStockId, { quantity_delivered: totalDelivered }, { transaction });
-
-    // 3. Get the item to find its parent order_id
-    const item = await OrderStock.findById(orderStockId, { transaction });
-    if (!item) {
+   const result = await OrderStock.updateById(orderStockId, { quantity_delivered: totalDelivered }, { transaction });
+    
+    if (!result) {
         throw new ApiError(404, "Order item not found during status update.");
     }
-    
-    // 4. Return the parent order_id so the main order status can be updated
-    return item.order_id;
+    return result.order_id;
 };
 
 /**
@@ -35,7 +30,6 @@ const updateOrderStatus = async (orderId, firmId, transaction) => {
     let totalItems = items.length;
     let deliveredItems = 0;
     let partiallyDeliveredItems = 0;
-
     for (const item of items) {
         if (parseFloat(item.quantity_delivered) >= parseFloat(item.quantity)) {
             deliveredItems++;
@@ -51,7 +45,7 @@ const updateOrderStatus = async (orderId, firmId, transaction) => {
     } else if (deliveredItems > 0 || partiallyDeliveredItems > 0) {
         newDeliveryStatus = 'PARTIALLY_DELIVERED';
     }
-
+    
     // 3. Determine new overall order_status
     const orderArray = await Order.findById(orderId, firmId, { transaction });
     if (!orderArray || orderArray.length === 0) {
@@ -60,13 +54,13 @@ const updateOrderStatus = async (orderId, firmId, transaction) => {
     const order = orderArray[0]; // Get object from array
 
     let newOrderStatus = 'PENDING';
-    // Check for paid status (handles overpayment for interest)
-    const isPaid = parseFloat(order.total_paid_amount) >= parseFloat(order.total_amount);
-
+    const isPaid = parseFloat(order.total_amount_paid) >= parseFloat(order.total_amount);
+    
     if (newDeliveryStatus === 'DELIVERED' && isPaid) {
         newOrderStatus = 'COMPLETED';
     }
-
+    
+    
     // 4. Update the parent order
     return await Order.updateById(orderId, firmId, {
         delivery_status: newDeliveryStatus,
@@ -188,7 +182,6 @@ const listOrderDeliveries = async (req, res, next) => {
             throw new ApiError(404, "Order not found.");
         }
        
-        console.log("Fetching deliveries for order:", order_id);
         const deliveries = await Delivery.findByOrderId(order_id);
         return res.status(200).json(
             new ApiResponse(200, "Deliveries retrieved successfully", deliveries)

@@ -29,8 +29,8 @@ class Firm {
     async findById(id, options = {}) {
         const db = options.transaction || database;
         const sql = `SELECT * FROM firm WHERE id = ?`;
-        const result = await db.query(sql, [id]);
-        return result[0];
+        const result = await db.query(sql, [id]); 
+        return result;
     }
 
     async findByGst(gst, options = {}) {

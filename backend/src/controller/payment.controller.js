@@ -24,7 +24,7 @@ const updateOrderStatus = async (order_id, firm_id, transaction) => {
     }
 
     return await Order.updateById(order_id, firm_id, {
-        total_paid_amount: totalPaid,
+        total_amount_paid: totalPaid,
         payment_status: newPaymentStatus,
         order_status: newOrderStatus
     }, { transaction });

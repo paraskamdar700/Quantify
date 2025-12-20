@@ -30,7 +30,6 @@ const createCategory = async (req, res, next) => {
             firm_id,
             created_by // Pass the creator's ID to the model
         };
-            console.log(newCategoryData)
         const newCategoryArray = await Category.createCategory(newCategoryData);
 
         if (!newCategoryArray || newCategoryArray.length === 0) {

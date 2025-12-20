@@ -37,7 +37,7 @@ const downloadInvoice = async (req, res, next) => {
         if (!orderArray || orderArray.length === 0) {
             throw new ApiError(404, "Order not found.");
         }
-        const order = orderArray[0];
+        const order = orderArray;
 
         // 2. Get all related data in parallel
         const [firmArray, customerArray, items, payments, deliveries] = await Promise.all([
@@ -49,7 +49,7 @@ const downloadInvoice = async (req, res, next) => {
         ]);
 
         // Handle cases where related data might not be found
-        const firm = firmArray && firmArray.length > 0 ? firmArray[0] : null;
+        const firm = firmArray && firmArray.length > 0 ? firmArray : null;
         const customer = customerArray && customerArray.length > 0 ? customerArray[0] : null;
 
         // 3. Assemble the complete invoice data object

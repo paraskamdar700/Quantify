@@ -23,10 +23,10 @@ router.post('/', authorize('OWNER', 'ADMIN'), recordPayment);
 router.get('/pending', authorize('OWNER', 'ADMIN'), getPendingPayments);
 
 // Get all payments for a specific order
-router.get('/order/:order_id', listOrderPayments);
+router.get('/orderpayments/:order_id', listOrderPayments);
 
 // Get a payment summary for a specific order
-router.get('/order/:order_id/summary', getPaymentSummary);
+router.get('/paymentsummary/:order_id/summary', getPaymentSummary);
 
 // Routes for a specific payment record
 router.route('/:id')
