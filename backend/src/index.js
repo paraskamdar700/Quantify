@@ -50,6 +50,7 @@ app.use("/api/v1/customer", customerRouter);
 app.use("/api/v1/category", categoryRouter);
 app.use("/api/v1/stock", stockRouter);
 app.use("/api/v1/order", orderRouter);
+app.use("/api/v1/dashboard", dashboardRouter);
 app.use("/api/v1/payments", paymentRouter);
 app.use("/api/v1/delivery", deliveryRouter);
 app.use("/api/v1/invoice", invoiceRouter);
