@@ -47,6 +47,7 @@ app.use("/api/v1/category", categoryRouter);
 app.use("/api/v1/stock", stockRouter);
 app.use("/api/v1/order", orderRouter);
 
+app.use("/api/v1/dashboard", dashboardRouter);
 // --- Error Handling Middleware (must be last) ---
 app.use(errorHandler);
 
