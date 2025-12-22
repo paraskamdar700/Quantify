@@ -38,6 +38,7 @@ import orderRouter from './routes/order.routes.js';
 import paymentRouter from './routes/payment.routes.js';
 import deliveryRouter from './routes/delivery.routes.js';
 import invoiceRouter from './routes/invoice.routes.js';
+import dashboardRouter from './routes/dashboard.routes.js';
 
 // --- API Routes ---
 app.get('/', (req, res) => {
