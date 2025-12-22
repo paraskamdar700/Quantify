@@ -5,7 +5,7 @@ import database from '../config/database.js';
 
 const createOrder = async (req, res, next) => {
     try {
-        const { customer_id, order_date, order_items, invoice_No } = req.body;
+        const { customer_id, order_date, order_items, invoice_No, payment_terms, delivery_instructions } = req.body;
         const { firm_id, id: userId } = req.user;
 
         if (!customer_id || !order_items || !Array.isArray(order_items) || order_items.length === 0) {
@@ -19,15 +19,22 @@ const createOrder = async (req, res, next) => {
         }
         const one = 1;
         const invoice_no = !invoice_No ? latestInvoiceNo + one : invoice_No;
-
         const now = new Date();
         const defaultDate = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
         const order_date_final = order_date || defaultDate;
 
         const finalOrder = await database.transaction(async (transaction) => {
         
-            const orderData = { customer_id, firm_id, created_by: userId, order_date: order_date_final, invoice_no };
-            const newOrder = await Order.createOrder(orderData, { transaction });
+            const orderData = { 
+                customer_id, 
+                firm_id, 
+                created_by: userId, 
+                order_date: order_date_final, 
+                invoice_no,
+                payment_terms,
+                delivery_instructions
+            };
+            const newOrder = await Order.create(orderData, { transaction });
             
             for (const item of order_items) {
                 const availableQuantity = await Stock.quantityAvailable(item.stock_id, item.quantity);
@@ -47,17 +54,20 @@ const createOrder = async (req, res, next) => {
             const totalAmount = await OrderStock.calculateTotalAmount(newOrder.id, { transaction });
             return await Order.updateById(newOrder.id, firm_id, { total_amount: totalAmount }, { transaction });
         });
+
         const createdOrderResponse = {
             id: finalOrder.id,
             customer_id: finalOrder.customer_id,
             firm_id: finalOrder.firm_id,
             created_by: finalOrder.created_by,
             order_date: finalOrder.order_date,
-            invoice_no: `INV-${now.getFullYear()}-${String(finalOrder.invoice_no).padStart(4, '0')}`,
+            invoice_no: `INV-${now.getFullYear()}-${String(finalOrder[0].invoice_no).padStart(4, '0')}`,
             order_status: finalOrder.order_status,
             payment_status: finalOrder.payment_status,
             delivery_status: finalOrder.delivery_status,
             total_amount: finalOrder.total_amount,
+            payment_terms: finalOrder.payment_terms,
+            delivery_instructions: finalOrder.delivery_instructions
         }
 
         return res.status(201).json(
@@ -80,14 +90,14 @@ const getOrder = async (req, res, next) => {
             throw new ApiError(404, "Order not found.");
         }
 
-        const items = await OrderStock.findByOrderId(id);
+        
         
         // (IMPORTANT)In a full app, you would also fetch payments and deliveries here
         // And Formate the Response Later Accordingly
-        const responseData = { ...order, items };
+        
 
         return res.status(200).json(
-            new ApiResponse(200, "Order retrieved successfully", responseData)
+              new ApiResponse(200, "Order retrieved successfully", order)
         );
     } catch (error) {
         next(error);
@@ -97,33 +107,54 @@ const getOrder = async (req, res, next) => {
 const listOrders = async (req, res, next) => {
     try {
         const { firm_id } = req.user;
-        const { order_status, payment_status, delivery_status } = req.query;
-        console.log(req.query);
-        console.log(req.user.firm_id);
+        
+        // Extract filters and pagination from request query
+        const { 
+            order_status, 
+            payment_status, 
+            delivery_status, 
+            startDate, 
+            endDate, 
+            search, 
+            page, 
+            limit 
+        } = req.query;
 
-        const page = parseInt(req.query.page, 10) || 1;
-        const limit = parseInt(req.query.limit, 10) || 10;
-        const offset = (page - 1) * limit;
+        // Pagination defaults
+        const pageNum = parseInt(page, 10) || 1;
+        const limitNum = parseInt(limit, 10) || 10;
+        const offset = (pageNum - 1) * limitNum;
 
-        const filters = {};
-        if (order_status) filters.order_status = order_status;
-        if (payment_status) filters.payment_status = payment_status;
-        if (delivery_status) filters.delivery_status = delivery_status;
+        // Construct Filters Object
+        const filters = {
+            order_status,
+            payment_status,
+            delivery_status,
+            startDate,
+            endDate,
+            search
+        };
 
-        const paginatedResult = await Order.findAllByFirmId(firm_id, filters, { limit, offset });
+        // Call Model
+        const paginatedResult = await Order.findAllByFirmId(firm_id, filters, { limit: limitNum, offset });
+        
+        paginatedResult.rows.forEach(element => {
+            element.invoice_no = `INV-${new Date().getFullYear()}-${String(element.invoice_no).padStart(4, '0')}`;
+        });
         
         const { rows: orders, totalCount } = paginatedResult;
 
-        const totalPages = Math.ceil(totalCount / limit);
+        // Build Response
+        const totalPages = Math.ceil(totalCount / limitNum);
         const responseData = {
             orders,
             pagination: {
                 totalItems: totalCount,
                 totalPages,
-                currentPage: page,
-                itemsPerPage: limit,
-                hasNextPage: page < totalPages,
-                hasPrevPage: page > 1
+                currentPage: pageNum,
+                itemsPerPage: limitNum,
+                hasNextPage: pageNum < totalPages,
+                hasPrevPage: pageNum > 1
             }
         };
 

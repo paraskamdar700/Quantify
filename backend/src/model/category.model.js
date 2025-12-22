@@ -22,7 +22,6 @@ class Category{
             }
 
         } catch (error) {
-            console.error("Error in createCategory model:", error);
             throw error;
         }
     }

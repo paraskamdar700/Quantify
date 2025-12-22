@@ -131,6 +131,9 @@ const loginUser = async (req, res, next) => {
         if (!userArray || userArray.length === 0) {
             throw new ApiError(404, "User with this email does not exist.");
         }
+        if (!userArray.is_active) {
+            throw new ApiError(403, "This user account has been deactivated.");
+        }
         const user = userArray;
 
         const isPasswordCorrect = await bcrypt.compare(password, user.password_hash);
@@ -308,71 +311,106 @@ const updateAvatar = async (req, res, next) => {
         next(error);
     }
 };
-const updateBio = async (req, res, next) => {
+const updateUserDetails = async (req, res, next) => {
     try {
-        const { bio } = req.body;
-        if (bio === undefined) {
-            throw new ApiError(400, "Bio is required.");
+        const userId = req.user.id;
+        
+        // Destructure all possible input fields from the request body
+        // We support both your old parameter names (newContact) and standard names (contact_no)
+        const { 
+            bio, 
+            contact_no, newContact, 
+            fullname, newFullName, 
+            email, newEmail 
+        } = req.body;
+
+        const updateData = {};
+
+        // 1. Map inputs to database column names
+        if (bio !== undefined) updateData.bio = bio;
+        
+        // Handle Contact No
+        if (contact_no !== undefined) updateData.contact_no = contact_no;
+        else if (newContact !== undefined) updateData.contact_no = newContact;
+
+        // Handle Full Name
+        if (fullname !== undefined) updateData.fullname = fullname;
+        else if (newFullName !== undefined) updateData.fullname = newFullName;
+
+        // Handle Email
+        if (email !== undefined) updateData.email = email;
+        else if (newEmail !== undefined) updateData.email = newEmail;
+
+        // 2. Validate that at least one field is provided
+        if (Object.keys(updateData).length === 0) {
+            throw new ApiError(400, "No valid fields provided for update. Please provide bio, contact_no, fullname, or email.");
         }
-        const updatedUser = await User.updateBioById(bio, req.user.id);
+
+        // 3. Perform the update using a generic model method
+        const updatedUser = await User.updateById(userId, updateData);
+
         if (!updatedUser) {
-            throw new ApiError(500, "Failed to update user bio. Please try again later.");
+            throw new ApiError(500, "Failed to update user details.");
         }
+
+        // 4. Return success (excluding password if present)
+        const { password_hash, ...safeUser } = updatedUser;
+
         return res.status(200).json(
-            new ApiResponse(200, "User bio updated successfully", {
-                bio: updatedUser.bio
-            })
-        );        
+            new ApiResponse(200, "User details updated successfully", safeUser)
+        );
+
     } catch (error) {
         next(error);
     }
 };
-const updateContact = async (req, res, next)=>{
-    try{
-        const {newContact} = req.body;
-        if(!newContact){
-            throw new ApiError(400,"new Contact is required");
+
+const softDeleteUser = async (req, res, next) => {
+    try {
+        const targetUserId = req.params.id;
+        const requestingUser = req.user; // From verifyJwt middleware
+
+        // 1. Find the target user to verify roles
+        // We assume findById returns an array [user] based on previous patterns
+        const targetUserArray = await User.findById(targetUserId);
+        
+        if (!targetUserArray || targetUserArray.length === 0) {
+            throw new ApiError(404, "User not found.");
         }
-        const updatedContact = await User.updateContactNoById(newContact, req.user.id);
-        if(!updatedContact){
-            throw new ApiError(400,"Failed to update the contact No");
+        const targetUser = targetUserArray;
+
+        // 2. Security Checks
+        
+        // Check 1: Must be in the same firm
+        if (targetUser.firm_id !== requestingUser.firm_id) {
+            throw new ApiError(403, "Forbidden: You cannot delete a user from another firm.");
         }
-        res.status(200)
-        .json(new ApiResponse(200,"Contact no is updated successfully",{updatedContact:updatedContact.contact_no}));
-    }catch(error){
-        next(error);
-    }
-};
-const updateFullName = async (req, res, next)=>{
-    try{
-        const {newFullName} = req.body;
-        if(!newFullName){
-            throw new ApiError(400,"new Full Name is required");
+
+        // Check 2: Cannot delete yourself
+        if (parseInt(targetUser.id) === parseInt(requestingUser.id)) {
+            throw new ApiError(400, "You cannot delete your own account via this route.");
         }
-        const updatedFullName = await User.updateFullNameById(newFullName, req.user.id);
-        if(!updatedFullName){
-            throw new ApiError(400,"Failed to update the Full Name");
+
+        // Check 3: Hierarchy Logic
+        if (targetUser.role === 'OWNER') {
+            throw new ApiError(403, "Cannot delete the Owner account.");
         }
-        res.status(200)
-        .json(new ApiResponse(200,"Full Name is updated successfully",{updatedFullName:updatedFullName.fullname}));
-    }catch(error){
-        next(error);
-    }
-};
-const updateEmail = async (req, res, next)=>{
-    try{
-        const {newEmail} = req.body;
-        if(!newEmail){
-            throw new ApiError(400,"new Email is required");
+
+        if (requestingUser.role === 'ADMIN') {
+            if (targetUser.role !== 'STAFF') {
+                throw new ApiError(403, "Admins can only delete Staff members.");
+            }
         }
-        const updatedEmail = await User.updateEmailById(newEmail, req.user.id);
-        if(!updatedEmail){
-            throw new ApiError(400,"Failed to update the Email");
-        }
-        res.status(200)
-        .json(new ApiResponse(200,"Email is updated successfully",{updatedEmail:updatedEmail.email}));
-    }
-    catch(error){
+        // Owners can delete anyone (except themselves, handled above)
+
+        // 3. Perform Soft Delete (Set is_active to false)
+        const deactivatedUser = await User.updateById(targetUserId, { is_active: false });
+
+        return res.status(200).json(
+            new ApiResponse(200, "User successfully deactivated (Soft Deleted).", null)
+        );
+
+    } catch (error) {
         next(error);
     }
 };
@@ -394,13 +432,15 @@ const getCurrentUser = async (req, res, next) => {
             throw new ApiError(404,"Firm not found");
         }
 
+
         const userResponse = {
             id: result.user[0].id,
             email: result.user[0].email,
             fullname: result.user[0].fullname,
             role: result.user[0].role,
             bio: result.user[0].bio,
-            avatar: result.user[0].avatar
+            avatar: result.user[0].avatar,
+            contact_no: result.user[0].contact_no
         }
         const firmResponse = result.firm[0];
         return res.status(200).json(
@@ -419,9 +459,7 @@ export { registerFirmAndOwner,
             logoutUser, 
             resetPassword, 
             updateAvatar,
-            updateBio,
-            updateContact,
-            updateFullName,
-            updateEmail,
+            updateUserDetails,
+            softDeleteUser,
             getCurrentUser
         };
