@@ -11,6 +11,7 @@ class Firm {
             INSERT INTO firm (firm_name, gst_no, firm_city, firm_street)
             VALUES (?, ?, ?, ?)
         `;
+    
         const [result] = await db.query(sql, [
             firmData.firm_name,
             firmData.gst_no,
@@ -22,6 +23,8 @@ class Firm {
             console.error("Firm creation failed. Full database response:", result);
             throw new Error("Failed to create firm in the database. See server logs for details.");
         }
+        
+        
 
         return await this.findById(result.insertId, { transaction: db });
     }
@@ -30,6 +33,7 @@ class Firm {
         const db = options.transaction || database;
         const sql = `SELECT * FROM firm WHERE id = ?`;
         const result = await db.query(sql, [id]); 
+        console.log("reshwfdsf",result);
         return result;
     }
 

@@ -7,7 +7,7 @@ class User {
 
         const sql = `INSERT INTO user (fullname, contact_no, email, password_hash, role, avatar, bio, firm_id) 
                         VALUES(?,?,?,?,?,?,?,?)`;
-        const result = await db.query(sql, [
+        const [result] = await db.query(sql, [
             userdata.fullname,
             userdata.contact_no,
             userdata.email,
@@ -17,6 +17,8 @@ class User {
             userdata.bio,
             userdata.firm_id
         ]);
+
+        
         
         if (!result || result.affectedRows !== 1 || !result.insertId) {
             console.error("User creation failed. Full database response:", result);

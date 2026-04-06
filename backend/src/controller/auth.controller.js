@@ -68,13 +68,13 @@ const registerFirmAndOwner = async (req, res, next) => {
                 firm_street: firmdata.firm_street || null
             }, { transaction });
 
-            const user = await User.createUser({
+        const user = await User.createUser({
                 fullname: userdata.fullname,
                 contact_no: userdata.contact_no,
                 email: userdata.email,
                 password_hash: await bcrypt.hash(userdata.password_hash, 10),
                 bio: userdata.bio || null,
-                firm_id: firm[0].id,
+                firm_id: firm[0][0].id,
                 role: 'OWNER',
                 avatar: uploadedAvatar?.secure_url || null 
             }, { transaction });
@@ -150,10 +150,12 @@ const loginUser = async (req, res, next) => {
         const refreshToken = generateRefreshToken(user);
         const firm = firmArray;
 
+        console.log("Generated Access Token:", accessToken);
+        console.log("Generated Refresh Token:", refreshToken);
         const options = {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production', 
-            sameSite: 'None',
+            // secure: process.env.NODE_ENV === 'production', 
+            sameSite: 'lax',
             maxAge: 24 * 60 * 60 * 1000
             // 24 * 60 * 
         };
