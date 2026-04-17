@@ -129,7 +129,6 @@ async findAllByFirmId(firmId, filters = {}, pagination = {}, options = {}) {
         const sql = `UPDATE ORDERS SET ${setClauses} WHERE id = ? AND firm_id = ?`;
         
         const [result] = await db.query(sql, values);
-        console.log("Update result:", result);
         if (result.affectedRows > 0) {
             return this.findById(id, firmId, options);
         }
