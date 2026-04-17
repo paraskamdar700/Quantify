@@ -33,7 +33,6 @@ class Firm {
         const db = options.transaction || database;
         const sql = `SELECT * FROM firm WHERE id = ?`;
         const result = await db.query(sql, [id]); 
-        console.log("reshwfdsf",result);
         return result;
     }
 

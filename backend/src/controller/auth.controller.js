@@ -121,6 +121,7 @@ const loginUser = async (req, res, next) => {
     try {
         const email = req.body.email?.trim();
         const password = req.body.password?.trim();
+        console.log(email, password);
     
         if (!email || !password) {
             throw new ApiError(400, "Email and password are required.");
@@ -150,8 +151,7 @@ const loginUser = async (req, res, next) => {
         const refreshToken = generateRefreshToken(user);
         const firm = firmArray;
 
-        console.log("Generated Access Token:", accessToken);
-        console.log("Generated Refresh Token:", refreshToken);
+    
         const options = {
             httpOnly: true,
             // secure: process.env.NODE_ENV === 'production', 
@@ -159,6 +159,13 @@ const loginUser = async (req, res, next) => {
             maxAge: 24 * 60 * 60 * 1000
             // 24 * 60 * 
         };
+
+//         const options = {
+//     httpOnly: true,         // safer
+//     secure: true,           // 🔥 REQUIRED for HTTPS (Cloudflare)
+//     sameSite: 'None',       // 🔥 REQUIRED for cross-origin
+//     maxAge: 24 * 60 * 60 * 1000
+// };
         const userResponse = {
             id: user.id,
             email: user.email,
@@ -223,7 +230,7 @@ const refreshToken = async (req, res, next) => {
         const accessToken = generateAccessToken(user);
         
         return res.status(200)
-                    .cookie("accessToken",accessToken)
+                    .cookie("accessToken",accessToken, options)
                     .json({
                             success: true,
                             message: "Access token refreshed successfully",
