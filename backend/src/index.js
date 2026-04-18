@@ -39,6 +39,7 @@ import paymentRouter from './routes/payment.routes.js';
 import deliveryRouter from './routes/delivery.routes.js';
 import invoiceRouter from './routes/invoice.routes.js';
 import dashboardRouter from './routes/dashboard.routes.js';
+import inventoryRouter from './routes/inventoryReport.routes.js';
 
 // --- API Routes ---
 app.get('/', (req, res) => {
@@ -52,6 +53,7 @@ app.use("/api/v1/category", categoryRouter);
 app.use("/api/v1/stock", stockRouter);
 app.use("/api/v1/order", orderRouter);
 app.use("/api/v1/dashboard", dashboardRouter);
+app.use("/api/v1/inventory", inventoryRouter);
 app.use("/api/v1/payments", paymentRouter);
 app.use("/api/v1/delivery", deliveryRouter);
 app.use("/api/v1/invoice", invoiceRouter);
